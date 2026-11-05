@@ -1,0 +1,16 @@
+.agents
+.claude
+
+void.lock.json
+
+node_modules
+dist
+.void
+.wrangler
+.cloudflare
+.void-wrangler.jsonc
+.env
+.env.*
+!.env.example
+*.tsbuildinfo
+.DS_Store

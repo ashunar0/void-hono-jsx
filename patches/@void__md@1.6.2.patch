@@ -1,0 +1,101 @@
+diff --git a/dist/plugin.mjs b/dist/plugin.mjs
+index 6338ba6414c979f9b42da8ea1b53fc897f2dca96..82f3f08f7206e50193f99d3e2bad4e4d97e98d0a 100644
+--- a/dist/plugin.mjs
++++ b/dist/plugin.mjs
+@@ -115,6 +115,55 @@ export default function MarkdownPage() {
+ `;
+ 	return code;
+ }
++// src/emit-hono.ts
++function emitHonoComponent(result, islandImports) {
++	const chunks = buildRenderChunks(result.html, islandImports);
++	let code = `import { jsx, Fragment } from "hono/jsx";\n`;
++	code += `import { raw } from "hono/html";\n`;
++	code += `import { FrontmatterContext } from "@void/md";\n`;
++	for (let islandIndex = 0; islandIndex < islandImports.length; islandIndex++) {
++		const islandImport = islandImports[islandIndex];
++		code += `import _raw_island_${islandIndex} from ${JSON.stringify(islandImport.specifier)};\n`;
++	}
++	for (let islandIndex = 0; islandIndex < islandImports.length; islandIndex++) {
++		const islandImport = islandImports[islandIndex];
++		code += `function ${islandImport.name}(props) {
++  return jsx(
++    "div",
++    {
++      "data-island": ${JSON.stringify(islandImport.islandId)},
++      "data-props": JSON.stringify(props),
++      "data-hydrate": ${JSON.stringify(islandImport.strategy)}
++    },
++    jsx(_raw_island_${islandIndex}, props)
++  );
++}\n`;
++	}
++	const children = [];
++	for (const chunk of chunks) if (chunk.type === "html") children.push(`raw(${JSON.stringify(chunk.html)})`);
++	else children.push(`jsx(${chunk.islandImport.name}, ${JSON.stringify(chunk.props)})`);
++	if (children.length === 0) children.push("null");
++	code += `
++const __frontmatter = ${JSON.stringify(result.frontmatter)};
++const __headings = ${JSON.stringify(result.headings)};
++
++export const frontmatter = __frontmatter;
++export const headings = __headings;
++
++export default function MarkdownPage() {
++  return jsx(
++    FrontmatterContext.Provider,
++    { value: __frontmatter },
++    jsx(
++      Fragment,
++      null,
++      ${children.join(",\n      ")}
++    )
++  );
++}
++`;
++	return code;
++}
+ // src/emit-solid.ts
+ function emitSolidComponent(result, islandImports) {
+ 	const chunks = buildRenderChunks(result.html, islandImports);
+@@ -285,6 +334,7 @@ const MD_CLIENT_ENTRY_ID = "virtual:void-md-client";
+ const ADAPTER_PLUGIN_NAMES = {
+ 	"void-vue:pages": "vue",
+ 	"void-react:pages": "react",
++	"void-hono:pages": "hono",
+ 	"void-svelte:pages": "svelte",
+ 	"void-solid:pages": "solid"
+ };
+@@ -390,7 +440,7 @@ function voidMarkdown(options) {
+ 					break;
+ 				}
+ 			}
+-			if (!adapter) throw new Error("void-md: No framework adapter detected. Install @void/vue, @void/react, @void/svelte, or @void/solid.");
++			if (!adapter) throw new Error("void-md: No framework adapter detected. Install @void/vue, @void/react, @void/svelte, @void/solid, or @void/hono.");
+ 		},
+ 		async buildStart() {
+ 			svelteModules.clear();
+@@ -465,6 +515,12 @@ import { useContext } from "react";
+ import { FrontmatterContext } from "@void/react";
+ export { FrontmatterContext };
+ export function useFrontmatter() { return useContext(FrontmatterContext) ?? {}; }
++`;
++					if (adapter === "hono") return `
++import { useContext } from "hono/jsx";
++import { FrontmatterContext } from "@void/hono";
++export { FrontmatterContext };
++export function useFrontmatter() { return useContext(FrontmatterContext) ?? {}; }
+ `;
+ 					if (adapter === "svelte") return `
+ import { getContext, setContext } from "svelte";
+@@ -512,6 +568,10 @@ export function useFrontmatter() { return useContext(FrontmatterContext) ?? {};
+ 					code: emitReactComponent(result, islands),
+ 					map: null
+ 				};
++				if (adapter === "hono") return {
++					code: emitHonoComponent(result, islands),
++					map: null
++				};
+ 				if (adapter === "svelte") {
+ 					const virtualId = createVirtualModuleId(SVELTE_VIRTUAL_PREFIX, _id, code, "svelte");
+ 					svelteModules.set(virtualId, emitSvelteComponent(result, islands));

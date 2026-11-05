@@ -1,0 +1,11 @@
+{
+  "version": 1,
+  "skills": {
+    "hono-void": {
+      "source": "honojs/skills",
+      "sourceType": "github",
+      "skillPath": "skills/hono-void/SKILL.md",
+      "computedHash": "6bf0af0419a674d8713ab2426c33b66fc296ef34dd5b5bc2b5ce6948d5044f1a"
+    }
+  }
+}

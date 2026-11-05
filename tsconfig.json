@@ -1,0 +1,18 @@
+{
+  "extends": "./.void/tsconfig.json",
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "lib": ["ESNext", "DOM"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "types": ["void/env", "vite/client"],
+    "allowImportingTsExtensions": true,
+    "noEmit": true,
+    "paths": { "@void/hono": ["./void-hono/index.tsx"] }
+  },
+  "include": ["routes", "pages", "components", "void-hono", "middleware", "src", "void.config.ts", "vite.config.ts"]
+}
