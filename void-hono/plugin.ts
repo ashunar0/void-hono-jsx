@@ -2,7 +2,7 @@
 // Regular pages are hydrated and use the Void Router; island pages and
 // Markdown pages are static HTML with hydrated islands.
 import { existsSync } from 'node:fs'
-import { dirname, resolve } from 'node:path'
+import { dirname } from 'node:path'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 import {
   createPagesPlugin,
@@ -59,7 +59,6 @@ async function hydrateIsland(el, mod, props, frontmatter) {
 }`
 
 function pagesPlugin(pagesDir: string, root: string, options: VoidHonoOptions): Plugin {
-  const runtime = (file: string) => resolve(root, 'void-hono', file)
   return createPagesPlugin(pagesDir, {
     // @void/md detects the adapter by this name (the patch adds "hono")
     name: 'void-hono:pages',
@@ -101,24 +100,20 @@ export { router };
     async config({ isDev, scan }) {
       const config: UserConfig = {
         oxc: { jsx: { runtime: 'automatic', importSource: 'hono/jsx' } },
-        resolve: {
-          // The more specific ids come first: a plain string alias also matches as a prefix
-          alias: [
-            { find: '@void/hono/pages-server', replacement: runtime('pages-server.ts') },
-            { find: '@void/hono/pages-client', replacement: runtime('pages-client.tsx') },
-            { find: '@void/hono', replacement: runtime('index.tsx') },
-          ],
-          dedupe: ['hono'],
-        },
+        resolve: { dedupe: ['hono'] },
       }
       if (isDev) {
         // Pre-bundle the deps up front. A reload in the middle of a request
-        // leaves two Context instances, and useFrontmatter() returns nothing
+        // leaves two Context instances, and useFrontmatter() returns nothing.
+        // The adapter is not pre-bundled, so it uses the same instances as the pages
         config.optimizeDeps = {
+          exclude: ['@void/hono'],
           include: [...HONO_CLIENT_DEPS, 'void/pages-client', 'void/pages-prefetch'],
         }
         config.environments = {
-          [WORKER_ENVIRONMENT_NAME]: { optimizeDeps: { include: HONO_SERVER_DEPS } },
+          [WORKER_ENVIRONMENT_NAME]: {
+            optimizeDeps: { exclude: ['@void/hono'], include: HONO_SERVER_DEPS },
+          },
         }
       } else if ((await scan())?.pages.some((page) => !page.island)) {
         config.environments = {

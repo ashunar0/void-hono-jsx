@@ -1,0 +1,21 @@
+{
+  "name": "@void/hono",
+  "version": "0.0.0",
+  "description": "Hono JSX pages, server rendering, forms, and navigation for Void (prototype).",
+  "type": "module",
+  "files": ["dist"],
+  "exports": {
+    ".": { "types": "./dist/index.d.ts", "import": "./dist/index.js" },
+    "./plugin": { "types": "./dist/plugin.d.ts", "import": "./dist/plugin.js" },
+    "./pages-client": { "types": "./dist/pages-client.d.ts", "import": "./dist/pages-client.js" },
+    "./pages-server": { "types": "./dist/pages-server.d.ts", "import": "./dist/pages-server.js" }
+  },
+  "scripts": {
+    "build": "tsc -p tsconfig.build.json"
+  },
+  "peerDependencies": {
+    "hono": "^4.13.0",
+    "vite": "^8.0.0",
+    "void": "1.6.2"
+  }
+}

@@ -1,11 +1,12 @@
 import '@void/md/theme.css'
-import { Link } from '@void/hono'
+import { Link, useShared } from '@void/hono'
 import { useFrontmatter } from '@void/md'
 import pages from '@void/md/pages'
 import type { PropsWithChildren } from 'hono/jsx'
 
 export default function Layout({ children }: PropsWithChildren) {
   const fm = useFrontmatter()
+  const shared = useShared()
   return (
     <div style="display:flex;gap:2rem;max-width:960px;margin:0 auto;padding:2rem">
       <nav style="min-width:180px">
@@ -33,7 +34,20 @@ export default function Layout({ children }: PropsWithChildren) {
           <li>
             <Link href="/fetch">Typed fetch</Link>
           </li>
+          <li>
+            {/* Stays marked on /items/1, /items/2, ... */}
+            <Link href="/items" activeMatch="prefix">
+              Items (dynamic routes)
+            </Link>
+          </li>
+          <li>
+            <Link href="/upload">Upload</Link>
+          </li>
         </ul>
+        <p id="shared">
+          {shared.site} · {shared.path}
+        </p>
+        {shared.flash && <p id="flash">{shared.flash}</p>}
       </nav>
       <main class="void-md" data-page-title={String(fm.title ?? '')}>
         {children}

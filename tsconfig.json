@@ -14,5 +14,5 @@
     "noEmit": true,
     "paths": { "@void/hono": ["./void-hono/index.tsx"] }
   },
-  "include": ["routes", "pages", "components", "void-hono", "middleware", "src", "void.config.ts", "vite.config.ts"]
+  "include": ["routes", "pages", "components", "lib", "void-hono", "middleware", "src", "void.config.ts", "vite.config.ts"]
 }

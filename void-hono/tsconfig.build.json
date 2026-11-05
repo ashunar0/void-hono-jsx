@@ -1,0 +1,20 @@
+{
+  // Stands alone on purpose. The app's tsconfig pulls in the generated route
+  // types, which import the app's pages and routes, and tsc would emit those too
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Bundler",
+    "lib": ["ESNext", "DOM"],
+    "types": ["vite/client"],
+    "jsx": "react-jsx",
+    "jsxImportSource": "hono/jsx",
+    "strict": true,
+    "skipLibCheck": true,
+    "rewriteRelativeImportExtensions": true,
+    "declaration": true,
+    "rootDir": ".",
+    "outDir": "dist"
+  },
+  "include": ["*.ts", "*.tsx"]
+}
