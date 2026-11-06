@@ -133,7 +133,7 @@ export { router };
         // The adapter is not pre-bundled, so it uses the same instances as the pages
         config.optimizeDeps = {
           exclude: ['@void/hono'],
-          include: [...HONO_CLIENT_DEPS, 'void/pages-client', 'void/pages-prefetch'],
+          include: [...HONO_CLIENT_DEPS, 'void/pages-client', 'void/pages-prefetch', 'void/routes'],
         }
         config.environments = {
           [WORKER_ENVIRONMENT_NAME]: {
