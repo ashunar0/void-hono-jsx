@@ -10,5 +10,6 @@ minimumReleaseAgeExclude:
   - '@void/md@1.6.2'
   - '@void/platform@1.6.2'
   - void@1.6.2
+  - vite-plugin-hono-jsx@0.1.0
 patchedDependencies:
   '@void/md@1.6.2': patches/@void__md@1.6.2.patch

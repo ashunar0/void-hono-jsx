@@ -3,6 +3,7 @@
 // Markdown pages are static HTML with hydrated islands.
 import { existsSync } from 'node:fs'
 import { dirname } from 'node:path'
+import honoJsx from 'vite-plugin-hono-jsx'
 import type { Plugin, ResolvedConfig, UserConfig } from 'vite'
 import {
   createPagesPlugin,
@@ -43,25 +44,6 @@ const HONO_CLIENT_DEPS = [
   'hono/jsx/dom/jsx-runtime',
   'hono/jsx/dom/jsx-dev-runtime',
 ]
-
-// The server renders with hono/jsx. The browser only needs hono/jsx/dom.
-const CLIENT_ALIASES: Record<string, string> = {
-  'hono/jsx': 'hono/jsx/dom',
-  'hono/jsx/jsx-runtime': 'hono/jsx/dom/jsx-runtime',
-  'hono/jsx/jsx-dev-runtime': 'hono/jsx/dom/jsx-dev-runtime',
-}
-
-function clientRuntimePlugin(): Plugin {
-  return {
-    name: 'void-hono:client-runtime',
-    enforce: 'pre',
-    resolveId(id, importer, options) {
-      const target = CLIENT_ALIASES[id]
-      if (!target || this.environment.config.consumer !== 'client') return
-      return this.resolve(target, importer, { ...options, skipSelf: true })
-    },
-  }
-}
 
 // Mounts an island in the browser. Called by initIslands from void/pages-client.
 const HYDRATE_ISLAND = `
@@ -123,10 +105,7 @@ export { router };
 `
     },
     async config({ isDev, scan }) {
-      const config: UserConfig = {
-        oxc: { jsx: { runtime: 'automatic', importSource: 'hono/jsx' } },
-        resolve: { dedupe: ['hono'] },
-      }
+      const config: UserConfig = {}
       if (isDev) {
         // Pre-bundle the deps up front. A reload in the middle of a request
         // leaves two Context instances, and useFrontmatter() returns nothing.
@@ -285,5 +264,5 @@ function islandsPlugin(pagesDir: string, root: string): Plugin[] {
 export function voidHono(options: VoidHonoOptions = {}): Plugin[] {
   const root = process.cwd()
   const pagesDir = resolvePagesDir(root)
-  return [clientRuntimePlugin(), pagesPlugin(pagesDir, root, options), ...islandsPlugin(pagesDir, root)]
+  return [...honoJsx(), pagesPlugin(pagesDir, root, options), ...islandsPlugin(pagesDir, root)]
 }
