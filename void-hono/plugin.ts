@@ -36,7 +36,32 @@ const PAGES_CLIENT_ENTRY_ID = 'virtual:void-pages-client'
 const WORKER_ENVIRONMENT_NAME = 'void_worker'
 const COMPONENT_EXTENSIONS = ['.tsx', '.jsx', '.ts', '.js']
 const HONO_SERVER_DEPS = ['hono/jsx', 'hono/jsx/jsx-runtime', 'hono/jsx/jsx-dev-runtime', 'hono/html']
-const HONO_CLIENT_DEPS = [...HONO_SERVER_DEPS, 'hono/jsx/dom', 'hono/jsx/dom/client']
+const HONO_CLIENT_DEPS = [
+  ...HONO_SERVER_DEPS,
+  'hono/jsx/dom',
+  'hono/jsx/dom/client',
+  'hono/jsx/dom/jsx-runtime',
+  'hono/jsx/dom/jsx-dev-runtime',
+]
+
+// The server renders with hono/jsx. The browser only needs hono/jsx/dom.
+const CLIENT_ALIASES: Record<string, string> = {
+  'hono/jsx': 'hono/jsx/dom',
+  'hono/jsx/jsx-runtime': 'hono/jsx/dom/jsx-runtime',
+  'hono/jsx/jsx-dev-runtime': 'hono/jsx/dom/jsx-dev-runtime',
+}
+
+function clientRuntimePlugin(): Plugin {
+  return {
+    name: 'void-hono:client-runtime',
+    enforce: 'pre',
+    resolveId(id, importer, options) {
+      const target = CLIENT_ALIASES[id]
+      if (!target || this.environment.config.consumer !== 'client') return
+      return this.resolve(target, importer, { ...options, skipSelf: true })
+    },
+  }
+}
 
 // Mounts an island in the browser. Called by initIslands from void/pages-client.
 const HYDRATE_ISLAND = `
@@ -260,5 +285,5 @@ function islandsPlugin(pagesDir: string, root: string): Plugin[] {
 export function voidHono(options: VoidHonoOptions = {}): Plugin[] {
   const root = process.cwd()
   const pagesDir = resolvePagesDir(root)
-  return [pagesPlugin(pagesDir, root, options), ...islandsPlugin(pagesDir, root)]
+  return [clientRuntimePlugin(), pagesPlugin(pagesDir, root, options), ...islandsPlugin(pagesDir, root)]
 }
