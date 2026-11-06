@@ -13,6 +13,7 @@ import {
   ssrProxy,
   type BaseLinkProps,
 } from 'void/pages-client'
+import type { CloudContextVariables } from 'void'
 import { NavigationContext, ParamsContext, RouterContext, SharedContext } from './context.ts'
 
 export * from './context.ts'
@@ -24,8 +25,9 @@ export type { DeferredState as Deferred, InferProps } from 'void'
 
 export const useRouter = () => useContext(RouterContext) ?? ssrProxy
 export const useNavigation = () => useContext(NavigationContext) ?? idleNavigationState()
-export const useParams = () => useContext(ParamsContext)
-export const useShared = () => useContext(SharedContext)
+export const useParams = <T extends Record<string, string> = Record<string, string>>() =>
+  useContext(ParamsContext) as T
+export const useShared = <T = CloudContextVariables['shared']>() => useContext(SharedContext) as T
 
 type AnchorProps = Omit<JSX.IntrinsicElements['a'], keyof BaseLinkProps>
 export type LinkProps = PropsWithChildren<BaseLinkProps & AnchorProps>
